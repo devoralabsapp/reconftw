@@ -129,8 +129,8 @@ def aggregate(inputs, max_line_bytes=DEFAULT_MAX_LINE_BYTES):
 
 
 def validate_paths(inputs, output):
-    if output.is_symlink() or output.is_dir():
-        raise ReportError("output must be a regular file, not a symlink or directory")
+    if output.is_symlink() or (output.exists() and not output.is_file()):
+        raise ReportError("output must be a regular file, not a symlink or special file")
     for source in inputs:
         if source.resolve() == output.resolve() or (output.exists() and os.path.samefile(source, output)):
             raise ReportError("output must not replace an input file")

@@ -7,6 +7,7 @@ import importlib.util
 import io
 import json
 import os
+import socket
 from pathlib import Path
 import stat
 import tempfile
@@ -223,6 +224,34 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(self.cli(), 2)
         self.assertEqual(target.read_text(), "keep")
         self.assertTrue(self.output.is_symlink())
+
+    def test_device_output_is_rejected_before_publication(self):
+        self.write_records(observation())
+        self.output = Path(os.devnull)
+        with patch.object(reporter, "publish") as publish:
+            self.assertEqual(self.cli(), 2)
+            publish.assert_not_called()
+
+    def test_fifo_output_is_rejected_without_replacement(self):
+        self.write_records(observation())
+        os.mkfifo(self.output)
+        before = self.output.stat()
+        self.assertEqual(self.cli(), 2)
+        after = self.output.stat()
+        self.assertTrue(stat.S_ISFIFO(after.st_mode))
+        self.assertEqual(after.st_ino, before.st_ino)
+        self.assertEqual(list(self.root.glob(".nuclei-report-*")), [])
+
+    def test_socket_output_is_rejected_without_replacement(self):
+        self.write_records(observation())
+        with socket.socket(socket.AF_UNIX) as server:
+            server.bind(str(self.output))
+            before = self.output.stat()
+            self.assertEqual(self.cli(), 2)
+            after = self.output.stat()
+            self.assertTrue(stat.S_ISSOCK(after.st_mode))
+            self.assertEqual(after.st_ino, before.st_ino)
+        self.assertEqual(list(self.root.glob(".nuclei-report-*")), [])
 
     def test_publish_failure_cleans_staging_and_preserves_output(self):
         self.write_records(observation())
