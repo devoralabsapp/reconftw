@@ -18,6 +18,7 @@ on:
 
 jobs:
   docker:
+    if: github.repository == 'six2dez/reconftw'
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU
