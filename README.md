@@ -55,6 +55,13 @@ reconFTW leverages a wide range of techniques, including passive and active subd
 
 **Disclaimer:** Usage of reconFTW for attacking targets without prior consent is illegal. It is the user's responsibility to obey all applicable laws. The developers assume no liability for misuse or damage caused by this tool. Use responsibly.
 
+## Private derivative additions
+
+This copy retains the [upstream project](https://github.com/six2dez/reconftw) and
+its MIT license. It adds [offline Nuclei triage exports](docs/OFFLINE_REPORTS.md)
+(JSON/CSV, reduced sensitive data, grouped observations) and safer atomic writes
+for scope filtering. These additions do not run scans or change discovery/rates.
+
 ---
 
 ## 📔 Table of Contents

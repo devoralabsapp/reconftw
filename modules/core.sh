@@ -1631,7 +1631,17 @@ function end_subfunc() {
 }
 
 function check_inscope() {
-    cat "$1" | inscope >"${1}_tmp" && cp "${1}_tmp" "$1" && rm -f "${1}_tmp"
+    local input_file="${1:-}" staged_file
+    [[ -f "$input_file" && ! -L "$input_file" ]] || return 1
+
+    staged_file=$(mktemp -- "${input_file}.scope.XXXXXX") || return 1
+    if inscope <"$input_file" >"$staged_file"; then
+        if mv -f -- "$staged_file" "$input_file"; then
+            return 0
+        fi
+    fi
+    rm -f -- "$staged_file"
+    return 1
 }
 
 function maybe_update_nuclei() {
