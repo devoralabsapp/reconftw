@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   security-events: write
 
 jobs:
@@ -32,7 +33,7 @@ jobs:
         # once the backlog is burned down.
         run: |
           semgrep scan \
-            --config p/bash \
+            --config r/bash \
             --config p/security-audit \
             --config p/secrets \
             --config p/dockerfile \
