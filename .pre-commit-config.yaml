@@ -24,4 +24,4 @@ repos:
         entry: bash -c 'bats tests/unit/'
         language: system
         pass_filenames: false
-        files: \.(sh|bash|bats)$
+        files: \.(sh|bash|bats|py)$

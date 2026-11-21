@@ -52,3 +52,7 @@ terraform.rc
 
 .claude
 .planning/
+
+# Python helper bytecode
+__pycache__/
+*.py[cod]
