@@ -1,6 +1,6 @@
 # Offline Nuclei triage reports
 
-This private derivative preserves reconFTW's MIT license and upstream scan modes.
+This derivative preserves reconFTW's MIT license and upstream scan modes.
 The additions here do **not** install scanners, contact targets, expand discovery,
 or change the request rate. No production scan is needed to use or test them.
 
@@ -63,7 +63,8 @@ content**. Do not share the entire scan directory on the strength of this export
 - Output is staged beside its destination, flushed, then atomically replaced.
   A previous report survives parse/write failures before replacement.
 - Output permissions are `0600`. The parent directory must already exist.
-- Output cannot be a symlink, directory, input file or hardlink to an input.
+- Output cannot be a symlink, non-regular file (including directories, devices,
+  FIFOs and sockets), input file or hardlink to an input.
 - Exit code `0` means export succeeded; `2` means invalid input or I/O failure.
 
 This helper has no dependencies on Nuclei or reconFTW's installed tool suite.

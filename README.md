@@ -55,17 +55,71 @@ reconFTW leverages a wide range of techniques, including passive and active subd
 
 **Disclaimer:** Usage of reconFTW for attacking targets without prior consent is illegal. It is the user's responsibility to obey all applicable laws. The developers assume no liability for misuse or damage caused by this tool. Use responsibly.
 
-## Private derivative additions
+## Downstream changes
 
-This copy retains the [upstream project](https://github.com/six2dez/reconftw) and
-its MIT license. It adds [offline Nuclei triage exports](docs/OFFLINE_REPORTS.md)
-(JSON/CSV, reduced sensitive data, grouped observations) and safer atomic writes
-for scope filtering. These additions do not run scans or change discovery/rates.
+This repository is maintained by [devoralabsapp](https://github.com/devoralabsapp)
+as a derivative of [six2dez/reconftw](https://github.com/six2dez/reconftw), retaining
+upstream history and the [MIT license](LICENSE). The upstream badges, releases,
+Docker images and installation examples below refer to the original project;
+clone **this repository** to use the additions listed here.
+
+These changes focus on safer local file handling and offline reporting. They do
+**not** add discovery sources, increase scan coverage or request rates, or run
+Nuclei automatically.
+
+| Area | Changes in this derivative |
+|---|---|
+| Offline Nuclei reports | New standard-library Python helper converts existing JSONL into JSON/CSV. Repeat `--input` to combine files; no network requests or scanner installation are needed. |
+| Reduced-data output | Retains only template ID, reported severity, type, canonical HTTP(S) origin, occurrence count and `verification: unverified`. Omits raw requests/responses, extracted values, URL credentials, paths, queries and fragments. |
+| Grouping | Groups observations by template, severity, type and origin, with deterministic ordering. Paths and matchers on the same origin collapse; counts are **not confirmed vulnerabilities**. |
+| Report file safety | Validates input records, limits each input line to 4 MiB by default, and stages output for atomic replacement with `0600` permissions. Rejects input/output aliases, output symlinks and special destinations such as devices, FIFOs and sockets. |
+| Scope-file safety | `check_inscope` uses unique adjacent staging files instead of a predictable temporary path. Failed filtering/publication preserves the original; successful output is atomic with `0600` permissions. Input symlinks and non-regular files are rejected. |
+| Regression tests | Adds 27 Python exporter tests and 8 Bats scope-file tests. A Bats bridge runs the Python suite, and Python changes now trigger the pre-commit Bats hook. |
+| CI safeguards | Restricts inherited Docker publishing to `six2dez/reconftw`. Repairs the Semgrep Bash rules reference (`r/bash`) and adds `actions: read` for SARIF upload. Findings remain advisory; scan/upload errors still fail CI. |
+
+### Offline report quick start
+
+From this repository's root, use Python 3.7+ and **existing** Nuclei JSONL files:
+
+```sh
+mkdir -p output
+python3 lib/nuclei_report.py \
+  --input Recon/example.com/nuclei_output/high_json.txt \
+  --input Recon/example.com/nuclei_output/medium_json.txt \
+  --output output/triage.json
+```
+
+For CSV, use the same inputs with `--format csv --output output/triage.csv`.
+The destination directory must already exist. Do not include both a combined
+scanner result and its per-severity copies unless duplicate observations should
+be counted. Non-HTTP(S) records are omitted and counted in the JSON summary.
+
+**Review before sharing:** retained hostnames, IP addresses and template IDs can
+still be sensitive. This exporter is not anonymization, does not verify findings,
+and leaves original scanner files and reconFTW's other exports unchanged.
+Atomic scope writes do not make all callers fail-closed or make the existing
+`passive` mode strictly passive.
+
+See [Offline Nuclei triage reports](docs/OFFLINE_REPORTS.md) for the output schema,
+validation rules, exit codes and limitations.
+
+### Test the additions without scanning targets
+
+```sh
+python3 tests/unit/test_nuclei_report.py
+bats tests/unit/test_check_inscope.bats tests/unit/test_nuclei_report.bats
+```
+
+Use bats-core 1.5+ for isolated test directories; 1.11.0 was used for development.
+Fixtures are synthetic and commands are stubbed. No production scan is required.
 
 ---
 
 ## 📔 Table of Contents
 
+- [Downstream changes](#downstream-changes)
+  - [Offline report quick start](#offline-report-quick-start)
+  - [Test the additions without scanning targets](#test-the-additions-without-scanning-targets)
 - [📔 Table of Contents](#-table-of-contents)
 - [✨ Features](#-features)
   - [OSINT](#osint)
